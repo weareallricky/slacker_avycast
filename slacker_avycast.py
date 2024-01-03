@@ -4,6 +4,7 @@ from datetime import datetime
 import time
 import os
 import sqlite3
+import traceback
 
 import requests
 from requests.exceptions import HTTPError
@@ -203,10 +204,17 @@ if __name__ == "__main__":
 
     while True:
         # fetch forecast
-        forecast = AvyForecast(
-                get_forecast_json(avy_forecast_endpoint),
-                slacker_avycast_tz
-                )
+        try:
+            forecast = AvyForecast(
+                    get_forecast_json(avy_forecast_endpoint),
+                    slacker_avycast_tz
+                    )
+        except Exception as err:
+            print("An exception occurred while attempting to fetch the " \
+                    "avalanche forecast:")
+            print(traceback.format_exc())
+            continue
+
         db = get_db_connection(db_file_location)
         cursor = db.cursor()
         record = cursor.execute(
@@ -227,15 +235,24 @@ if __name__ == "__main__":
                 )
         db.commit()
         db.close()
-        slack_message = AvyForecastSlackMessage(
-                forecast,
-                slack_message_header,
-                avy_forecast_url
-                )
-        requests.post(
-                webhook_url,
-                json=slack_message.generate_payload(),
-                timeout=30
-                )
+
+        # post Slack message
+        try:
+            slack_message = AvyForecastSlackMessage(
+                    forecast,
+                    slack_message_header,
+                    avy_forecast_url
+                    )
+
+            requests.post(
+                    webhook_url,
+                    json=slack_message.generate_payload(),
+                    timeout=30
+                    )
+        except Exception as err:
+            print("An exception occurred while attempting to post the "\
+                    "Slack message:")
+            print(traceback.format_exc())
+
         del forecast
         del slack_message
