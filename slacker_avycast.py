@@ -12,6 +12,7 @@ from dateutil import tz
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
+
 class AvyForecast:
     """Model of avalanche forecast retrieved from avalanche.org API """
     danger_scale = (
@@ -62,12 +63,13 @@ class AvyForecast:
                             danger_max = day[i]
         self.danger_max = danger_max
 
+
 class AvyForecastSlackMessage:
     """Model representing an avy forecast Slack message"""
     def __init__(self,
-            avy_forecast,
-            header="Avalanche Forecast",
-            full_forecast_url="http://avalanche.org"):
+                 avy_forecast,
+                 header="Avalanche Forecast",
+                 full_forecast_url="http://avalanche.org"):
         """Sets object properties from AvyForecast object"""
         self.avy_forecast = avy_forecast
         self.full_forecast_url = full_forecast_url
@@ -87,7 +89,7 @@ class AvyForecastSlackMessage:
                 self.avy_forecast.expires_time
                 )
         danger_level = forecast \
-                .danger_scale[self.avy_forecast.danger_max]
+            .danger_scale[self.avy_forecast.danger_max]
         payload = {
             "text": {
                 "type": "plain_text",
@@ -106,12 +108,12 @@ class AvyForecastSlackMessage:
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": "*Published:*\n" \
+                            "text": "*Published:*\n"
                                     f"{formatted_published_time}"
                             },
                         {
                             "type": "mrkdwn",
-                            "text": "*Expires:*\n" \
+                            "text": "*Expires:*\n"
                                     f"{formatted_expires_time}"
                             }
                         ]
@@ -121,17 +123,17 @@ class AvyForecastSlackMessage:
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": "*Author:*\n" \
+                            "text": "*Author:*\n"
                                     f"{self.avy_forecast.author}"
-                            }
+                                }
                         ]
                     },
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": "*Overall danger:*\n" \
-                                f":avy-danger-{danger_level}: " \
+                        "text": "*Overall danger:*\n"
+                                f":avy-danger-{danger_level}: "
                                 f"{danger_level}"
                         }
                     },
@@ -139,7 +141,7 @@ class AvyForecastSlackMessage:
                     "type": "section",
                     "text": {
                             "type": "mrkdwn",
-                            "text": "*Bottom line:*\n" \
+                            "text": "*Bottom line:*\n"
                                     f"{self.avy_forecast.bottom_line}"
                             }
                     },
@@ -147,13 +149,14 @@ class AvyForecastSlackMessage:
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"<{self.full_forecast_url}|" \
+                        "text": f"<{self.full_forecast_url}|"
                                 "Read full forecast>"
                         }
                     }
                 ]
             }
         return payload
+
 
 def get_forecast_json(url):
     """Fetch JSON from a url eg avalanche forecast API"""
@@ -165,12 +168,14 @@ def get_forecast_json(url):
         print(f"HTTP error occurred: {http_err}")
         return ""
 
+
 def get_avy_forecast_endpoint(forecast_center_id, forecast_zone_id):
     """Return avy forecast API endpoint URL"""
     return "https://api.avalanche.org/v2/public/product" \
-            "?type=forecast" \
-            f"&center_id={forecast_center_id}"\
-            f"&zone_id={forecast_zone_id}"
+        "?type=forecast" \
+        f"&center_id={forecast_center_id}"\
+        f"&zone_id={forecast_zone_id}"
+
 
 def get_db_connection(db_location):
     """Returns SQLite db connection; prepares latest_forecast table"""
@@ -179,6 +184,7 @@ def get_db_connection(db_location):
             (id INTEGER PRIMARY KEY,
             published_time timestamp);''')
     return conn
+
 
 if __name__ == "__main__":
     load_dotenv()
@@ -210,8 +216,8 @@ if __name__ == "__main__":
                     slacker_avycast_tz
                     )
         except Exception as err:
-            print("An exception occurred while attempting to fetch the " \
-                    "avalanche forecast:")
+            print("An exception occurred while attempting to fetch the "
+                  "avalanche forecast:")
             print(traceback.format_exc())
             continue
 
@@ -228,9 +234,9 @@ if __name__ == "__main__":
             continue
 
         db.execute(
-                "INSERT OR REPLACE INTO latest_forecast" \
-                    "(id, published_time)" \
-                    "VALUES (1, ?);",
+                "INSERT OR REPLACE INTO latest_forecast"
+                "(id, published_time)"
+                "VALUES (1, ?);",
                 (forecast.published_time,)
                 )
         db.commit()
@@ -250,8 +256,8 @@ if __name__ == "__main__":
                     timeout=30
                     )
         except Exception as err:
-            print("An exception occurred while attempting to post the "\
-                    "Slack message:")
+            print("An exception occurred while attempting to post the "
+                  "Slack message:")
             print(traceback.format_exc())
 
         del forecast
