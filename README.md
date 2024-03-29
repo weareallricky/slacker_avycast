@@ -2,7 +2,7 @@
 Posts avalanche forecast from avalanche.org API to Slack
 
 ## Overview
-This app should work avalanche centers that use the avalanche.org API. It will post to your desired Slack channel using a Slack API webhook, which you will need to set up in your Slack instance ([Salck API webhook documentation](https://api.slack.com/messaging/webhooks)). The app will periodically check the API and if it finds a new forecast, it will send a forecast overview to Slack.
+This app should work for avalanche centers that use the avalanche.org API. It will post to your desired Slack channel using a Slack API webhook, which you will need to set up in your Slack instance ([Salck API webhook documentation](https://api.slack.com/messaging/webhooks)). The app will periodically check the API and if it finds a new forecast, it will send a forecast overview to Slack.
 
 [Example screenshot](https://imgur.com/a/jPtKQBt)
 
